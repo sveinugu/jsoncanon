@@ -1,4 +1,45 @@
+import re
 from jsoncanon.types import JsonWithFinal
+
+
+def float_to_es6_str(f: float) -> str:
+    """Serialize a finite float as ECMAScript Number::toString (RFC 8785
+    §3.2.2.3). ``repr`` already yields the shortest round-tripping decimal;
+    this only re-applies the ES6 positional-vs-exponential rules to it, so
+    e.g. 1e-7 -> "1e-7" (not "1e-07") and 1e-5 -> "0.00001" (not "1e-05")."""
+    if f != f or f in (float('inf'), float('-inf')):
+        raise ValueError('NaN and Infinity are not allowed by RFC 8785')
+    if f == 0:
+        return '0'  # also normalizes -0.0
+    neg = f < 0
+    if neg:
+        f = -f
+    rep = repr(f)
+    if 'e' in rep or 'E' in rep:
+        mantissa, exponent = re.split('[eE]', rep)
+        int_part, _, frac_part = mantissa.partition('.')
+        digits = int_part + frac_part
+        exp_val = int(exponent)
+    else:
+        int_part, _, frac_part = rep.partition('.')
+        all_digits = int_part + frac_part
+        first = next(i for i, c in enumerate(all_digits) if c in '123456789')
+        exp_val = len(int_part) - 1 - first
+        digits = all_digits[first:]
+    digits = digits.rstrip('0') or '0'
+    k = len(digits)
+    n = exp_val + 1
+    if k <= n <= 21:
+        out = digits + '0' * (n - k)
+    elif 0 < n <= 21:
+        out = digits[:n] + '.' + digits[n:]
+    elif -6 < n <= 0:
+        out = '0.' + '0' * (-n) + digits
+    else:
+        e = n - 1
+        exp_str = ('+' + str(e)) if e >= 0 else str(e)
+        out = (digits if k == 1 else digits[0] + '.' + digits[1:]) + 'e' + exp_str
+    return '-' + out if neg else out
 
 
 def int_to_str_if_too_large(i: int, /) -> int | str:

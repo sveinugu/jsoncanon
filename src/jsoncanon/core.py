@@ -4,8 +4,9 @@ from typing import cast, overload
 from jsoncanon.encoder import FinalJsonEncoder
 from jsoncanon.functions import (
     dict_to_sorted_by_utf16_tuple,
-    float_to_int_if_whole_and_not_large_exp,
-    int_to_str_if_too_large,
+    float_to_es6_str,
+                                 float_to_int_if_whole_and_not_large_exp,
+                                 int_to_str_if_too_large,
 )
 from jsoncanon.preprocess import (
     JsonDataPreprocessor,
@@ -41,6 +42,7 @@ _preprocess = JsonDataPreprocessor(
     [
         int_to_str_if_too_large,
         float_to_int_if_whole_and_not_large_exp,
+        float_to_es6_str,
         dict_to_sorted_by_utf16_tuple,
     ]
 )

@@ -73,6 +73,14 @@ def test_numbers() -> None:
     assert canonicalize(1e21) == b'1e+21'
     assert canonicalize(1e-6) == b'0.000001'
 
+    # ECMAScript Number::toString: exponents carry no leading zero, and the
+    # positional form is used across the whole [1e-6, 1e21) range.
+    assert canonicalize(1e-7) == b'1e-7'
+    assert canonicalize(1e-5) == b'0.00001'
+    assert canonicalize(5e-324) == b'5e-324'
+    # shortest round-trip: the text must parse back to the same double.
+    assert canonicalize(0.1 + 0.2) == b'0.30000000000000004'
+
 
 def test_sorting() -> None:
     in_data = {
