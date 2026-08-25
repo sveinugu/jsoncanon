@@ -12,9 +12,14 @@ def float_to_es6_str(f: float) -> str:
     if f == 0:
         return '0'  # also normalizes -0.0
     neg = f < 0
-    if neg:
-        f = -f
-    rep = repr(f)
+    digits, exp = _significand_and_exponent(repr(abs(f)))
+    out = _es6_positional_or_exponential(digits, exp)
+    return '-' + out if neg else out
+
+
+def _significand_and_exponent(rep: str) -> Tuple[str, int]:
+    """Split ``repr(f)`` into its significant digits (trailing zeros stripped)
+    and the base-10 exponent of the leading digit."""
     if 'e' in rep or 'E' in rep:
         mantissa, exponent = re.split('[eE]', rep)
         int_part, _, frac_part = mantissa.partition('.')
@@ -26,20 +31,23 @@ def float_to_es6_str(f: float) -> str:
         first = next(i for i, c in enumerate(all_digits) if c in '123456789')
         exp_val = len(int_part) - 1 - first
         digits = all_digits[first:]
-    digits = digits.rstrip('0') or '0'
+    return digits.rstrip('0') or '0', exp_val
+
+
+def _es6_positional_or_exponential(digits: str, exp_val: int) -> str:
+    """Render a significand and exponent using the ECMAScript
+    Number::toString positional-vs-exponential rules (RFC 8785 §3.2.2.3)."""
     k = len(digits)
     n = exp_val + 1
     if k <= n <= 21:
-        out = digits + '0' * (n - k)
-    elif 0 < n <= 21:
-        out = digits[:n] + '.' + digits[n:]
-    elif -6 < n <= 0:
-        out = '0.' + '0' * (-n) + digits
-    else:
-        e = n - 1
-        exp_str = ('+' + str(e)) if e >= 0 else str(e)
-        out = (digits if k == 1 else digits[0] + '.' + digits[1:]) + 'e' + exp_str
-    return '-' + out if neg else out
+        return digits + '0' * (n - k)
+    if 0 < n <= 21:
+        return digits[:n] + '.' + digits[n:]
+    if -6 < n <= 0:
+        return '0.' + '0' * (-n) + digits
+    e = n - 1
+    exp_str = ('+' + str(e)) if e >= 0 else str(e)
+    return (digits if k == 1 else digits[0] + '.' + digits[1:]) + 'e' + exp_str
 
 
 def int_to_str_if_too_large(i: int, /) -> int | str:
