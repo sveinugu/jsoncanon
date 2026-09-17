@@ -1,7 +1,7 @@
 from jsoncanon.types import DecimalParts, FinalJson, JsonWithFinal
 
 
-def float_to_es6_str(val: float, /) -> FinalJson:
+def float_to_final_es6_str(val: float, /) -> FinalJson:
     """Return a finite float as an RFC 8785 ECMAScript number token.
 
     Python's ``repr`` supplies the shortest round-tripping decimal
@@ -81,13 +81,6 @@ def int_to_str_if_too_large(i: int, /) -> int | str:
         return str(i)
     else:
         return i
-
-
-def float_to_int_if_whole_and_not_large_exp(f: float, /) -> int | float:
-    if f.is_integer() and abs(f) < 1e21:
-        return int(f)
-    else:
-        return f
 
 
 def to_utf16_tuple(any_str: str) -> tuple[int, ...]:
