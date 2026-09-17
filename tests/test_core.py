@@ -59,15 +59,14 @@ def test_strings() -> None:
     assert canonicalize('ö') == bytes('"ö"', 'utf8')
 
 
-@pytest.mark.skip(reason='Floating point support has not been implemented yet')
 def test_numbers() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(float('nan'))
     with pytest.raises(ValueError):
         assert canonicalize(float('inf'))
 
-    assert canonicalize(9223372036854775295) == b'9223372036854775000'
-    assert canonicalize(9223372036854775296) == b'9223372036854776000'
+    assert canonicalize(float(9223372036854775295)) == b'9223372036854775000'
+    assert canonicalize(float(9223372036854775296)) == b'9223372036854776000'
     assert canonicalize(56.0) == b'56'
     assert canonicalize(1e20) == b'100000000000000000000'
     assert canonicalize(1e21) == b'1e+21'

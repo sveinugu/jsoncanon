@@ -1,8 +1,9 @@
 import re
-from jsoncanon.types import JsonWithFinal
+
+from jsoncanon.types import FinalJson, JsonWithFinal
 
 
-def float_to_es6_str(f: float) -> str:
+def float_to_es6_str(f: float, /) -> FinalJson:
     """Serialize a finite float as ECMAScript Number::toString (RFC 8785
     §3.2.2.3). ``repr`` already yields the shortest round-tripping decimal;
     this only re-applies the ES6 positional-vs-exponential rules to it, so
@@ -10,14 +11,14 @@ def float_to_es6_str(f: float) -> str:
     if f != f or f in (float('inf'), float('-inf')):
         raise ValueError('NaN and Infinity are not allowed by RFC 8785')
     if f == 0:
-        return '0'  # also normalizes -0.0
+        return FinalJson('0')  # also normalizes -0.0
     neg = f < 0
     digits, exp = _significand_and_exponent(repr(abs(f)))
     out = _es6_positional_or_exponential(digits, exp)
-    return '-' + out if neg else out
+    return FinalJson('-' + out if neg else out)
 
 
-def _significand_and_exponent(rep: str) -> Tuple[str, int]:
+def _significand_and_exponent(rep: str) -> tuple[str, int]:
     """Split ``repr(f)`` into its significant digits (trailing zeros stripped)
     and the base-10 exponent of the leading digit."""
     if 'e' in rep or 'E' in rep:
