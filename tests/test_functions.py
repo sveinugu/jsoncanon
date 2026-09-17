@@ -1,7 +1,10 @@
+import pytest
 from jsoncanon.functions import (
+    big_int_as_float,
+    big_int_as_str,
     dict_to_sorted_by_utf16_tuple,
     float_to_final_es6_str,
-    int_to_str_if_too_large,
+    raise_if_big_int,
     to_utf16_tuple,
 )
 from jsoncanon.preprocess import JsonDataPreprocessor
@@ -19,18 +22,43 @@ def test_float_to_final_es6_str() -> None:
     assert float_to_final_es6_str(float(9223372036854775295)) == FinalJson('9223372036854775000')
 
 
-def test_int_to_str_if_too_large() -> None:
-    assert int_to_str_if_too_large(9007199254740992) == 9007199254740992
-    assert type(int_to_str_if_too_large(9007199254740992)) is int
+def test_big_int_as_str() -> None:
+    assert big_int_as_str(9007199254740991) == 9007199254740991
+    assert type(big_int_as_str(9007199254740991)) is int
 
-    assert int_to_str_if_too_large(-9007199254740992) == -9007199254740992
-    assert type(int_to_str_if_too_large(-9007199254740992)) is int
+    assert big_int_as_str(-9007199254740991) == -9007199254740991
+    assert type(big_int_as_str(-9007199254740991)) is int
 
-    assert int_to_str_if_too_large(9007199254740993) == '9007199254740993'
-    assert type(int_to_str_if_too_large(9007199254740993)) is str
+    assert big_int_as_str(9007199254740992) == '9007199254740992'
+    assert type(big_int_as_str(9007199254740992)) is str
 
-    assert int_to_str_if_too_large(-9007199254740993) == '-9007199254740993'
-    assert type(int_to_str_if_too_large(-9007199254740993)) is str
+    assert big_int_as_str(-9007199254740992) == '-9007199254740992'
+    assert type(big_int_as_str(-9007199254740992)) is str
+
+
+def test_big_int_as_float() -> None:
+    assert big_int_as_float(9007199254740991) == 9007199254740991
+    assert big_int_as_float(-9007199254740991) == -9007199254740991
+    assert big_int_as_float(9007199254740992) == '9007199254740992'
+    assert big_int_as_float(-9007199254740992) == '-9007199254740992'
+    assert big_int_as_float(9223372036854775295) == '9223372036854775000'
+    assert big_int_as_float(-9223372036854775295) == '-9223372036854775000'
+    assert big_int_as_float(9223372036854775296) == '9223372036854776000'
+    assert big_int_as_float(-9223372036854775296) == '-9223372036854776000'
+
+
+def test_raise_if_big_int() -> None:
+    assert raise_if_big_int(9007199254740991) == 9007199254740991
+    assert type(raise_if_big_int(9007199254740991)) is int
+
+    assert raise_if_big_int(-9007199254740991) == -9007199254740991
+    assert type(raise_if_big_int(-9007199254740991)) is int
+
+    with pytest.raises(ValueError):
+        raise_if_big_int(9007199254740992)
+
+    with pytest.raises(ValueError):
+        raise_if_big_int(-9007199254740992)
 
 
 def test_to_utf16_tuple() -> None:

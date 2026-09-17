@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from inspect import Parameter, Signature, signature
 from typing import (
@@ -28,7 +29,7 @@ class PreprocFuncInfo:
 
 @dataclass
 class JsonDataPreprocessor:
-    def __init__(self, preprocess_funcs: list[PreprocInputFunc] | None = None):
+    def __init__(self, preprocess_funcs: Sequence[PreprocInputFunc] | None = None):
         if preprocess_funcs is None:
             preprocess_funcs = []
 

@@ -1,4 +1,6 @@
-from typing import Callable, NamedTuple, TypeAlias, TypeVar
+from typing import Callable, Literal, NamedTuple, TypeAlias, TypeVar
+
+BigIntsOption: TypeAlias = Literal['as_string', 'as_float', 'raise']
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 Json: TypeAlias = JsonScalar | dict[str, 'Json'] | list['Json']

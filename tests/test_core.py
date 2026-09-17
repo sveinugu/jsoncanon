@@ -59,7 +59,41 @@ def test_strings() -> None:
     assert canonicalize('ö') == bytes('"ö"', 'utf8')
 
 
-def test_numbers() -> None:
+def test_ints() -> None:
+    assert canonicalize(0) == b'0'
+    assert canonicalize(-0) == b'0'
+    assert canonicalize(12345) == b'12345'
+    assert canonicalize(-12345) == b'-12345'
+    assert canonicalize(9007199254740991) == b'9007199254740991'
+
+
+def test_big_ints() -> None:
+    assert canonicalize(9007199254740992) == b'"9007199254740992"'
+    assert canonicalize(9007199254740993) == b'"9007199254740993"'
+    assert canonicalize(9223372036854775295) == b'"9223372036854775295"'
+    assert canonicalize(9223372036854775296) == b'"9223372036854775296"'
+
+    assert canonicalize(9007199254740992, big_ints='as_string') == b'"9007199254740992"'
+    assert canonicalize(9007199254740993, big_ints='as_string') == b'"9007199254740993"'
+    assert canonicalize(9223372036854775295, big_ints='as_string') == b'"9223372036854775295"'
+    assert canonicalize(9223372036854775296, big_ints='as_string') == b'"9223372036854775296"'
+
+    assert canonicalize(9007199254740992, big_ints='as_float') == b'9007199254740992'
+    assert canonicalize(9007199254740993, big_ints='as_float') == b'9007199254740992'
+    assert canonicalize(9223372036854775295, big_ints='as_float') == b'9223372036854775000'
+    assert canonicalize(9223372036854775296, big_ints='as_float') == b'9223372036854776000'
+
+    with pytest.raises(ValueError):
+        assert canonicalize(9007199254740992, big_ints='raise')
+    with pytest.raises(ValueError):
+        assert canonicalize(9007199254740993, big_ints='raise')
+    with pytest.raises(ValueError):
+        assert canonicalize(9223372036854775295, big_ints='raise')
+    with pytest.raises(ValueError):
+        assert canonicalize(9223372036854775295, big_ints='raise')
+
+
+def test_floats() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(float('nan'))
     with pytest.raises(ValueError):
@@ -67,12 +101,13 @@ def test_numbers() -> None:
 
     assert canonicalize(float(0)) == b'0'
     assert canonicalize(float(-0)) == b'0'
+
     assert canonicalize(float(9223372036854775295)) == b'9223372036854775000'
     assert canonicalize(float(9223372036854775296)) == b'9223372036854776000'
+    assert canonicalize(float(9007199254740991)) == b'9007199254740991'
     assert canonicalize(float(9007199254740992)) == b'9007199254740992'
     assert canonicalize(float(9007199254740993)) == b'9007199254740992'
-    assert canonicalize(9007199254740992) == b'9007199254740992'
-    assert canonicalize(9007199254740993) == b'"9007199254740993"'
+
     assert canonicalize(56.0) == b'56'
     assert canonicalize(1e20) == b'100000000000000000000'
     assert canonicalize(1e21) == b'1e+21'
