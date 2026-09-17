@@ -52,7 +52,7 @@ def _es6_positional_or_exponential(digits: str, exp_val: int) -> str:
 
 
 def int_to_str_if_too_large(i: int, /) -> int | str:
-    if i >= 2**63 or i <= -(2**63):
+    if i > 2**53 or i < -(2**53):
         return str(i)
     else:
         return i

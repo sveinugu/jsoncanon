@@ -67,6 +67,10 @@ def test_numbers() -> None:
 
     assert canonicalize(float(9223372036854775295)) == b'9223372036854775000'
     assert canonicalize(float(9223372036854775296)) == b'9223372036854776000'
+    assert canonicalize(float(9007199254740992)) == b'9007199254740992'
+    assert canonicalize(float(9007199254740993)) == b'9007199254740992'
+    assert canonicalize(9007199254740992) == b'9007199254740992'
+    assert canonicalize(9007199254740993) == b'"9007199254740993"'
     assert canonicalize(56.0) == b'56'
     assert canonicalize(1e20) == b'100000000000000000000'
     assert canonicalize(1e21) == b'1e+21'
@@ -77,6 +81,7 @@ def test_numbers() -> None:
     assert canonicalize(1e-7) == b'1e-7'
     assert canonicalize(1e-5) == b'0.00001'
     assert canonicalize(5e-324) == b'5e-324'
+
     # shortest round-trip: the text must parse back to the same double.
     assert canonicalize(0.1 + 0.2) == b'0.30000000000000004'
 

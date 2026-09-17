@@ -44,17 +44,17 @@ def test_float_to_int_if_whole_and_not_large_exp() -> None:
 
 
 def test_int_to_str_if_too_large() -> None:
-    assert int_to_str_if_too_large(9223372036854775807) == 9223372036854775807
-    assert type(int_to_str_if_too_large(9223372036854775807)) is int
+    assert int_to_str_if_too_large(9007199254740992) == 9007199254740992
+    assert type(int_to_str_if_too_large(9007199254740992)) is int
 
-    assert int_to_str_if_too_large(-9223372036854775807) == -9223372036854775807
-    assert type(int_to_str_if_too_large(-9223372036854775807)) is int
+    assert int_to_str_if_too_large(-9007199254740992) == -9007199254740992
+    assert type(int_to_str_if_too_large(-9007199254740992)) is int
 
-    assert int_to_str_if_too_large(-9223372036854775808) == '-9223372036854775808'
-    assert type(int_to_str_if_too_large(-9223372036854775808)) is str
+    assert int_to_str_if_too_large(9007199254740993) == '9007199254740993'
+    assert type(int_to_str_if_too_large(9007199254740993)) is str
 
-    assert int_to_str_if_too_large(-9223372036854775808) == '-9223372036854775808'
-    assert type(int_to_str_if_too_large(-9223372036854775808)) is str
+    assert int_to_str_if_too_large(-9007199254740993) == '-9007199254740993'
+    assert type(int_to_str_if_too_large(-9007199254740993)) is str
 
 
 def test_to_utf16_tuple() -> None:
