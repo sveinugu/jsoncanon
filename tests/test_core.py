@@ -65,6 +65,8 @@ def test_numbers() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(float('inf'))
 
+    assert canonicalize(float(0)) == b'0'
+    assert canonicalize(float(-0)) == b'0'
     assert canonicalize(float(9223372036854775295)) == b'9223372036854775000'
     assert canonicalize(float(9223372036854775296)) == b'9223372036854776000'
     assert canonicalize(float(9007199254740992)) == b'9007199254740992'

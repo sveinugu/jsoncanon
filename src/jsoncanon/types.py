@@ -1,4 +1,4 @@
-from typing import Callable, TypeAlias, TypeVar
+from typing import Callable, NamedTuple, TypeAlias, TypeVar
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 Json: TypeAlias = JsonScalar | dict[str, 'Json'] | list['Json']
@@ -30,3 +30,17 @@ PreprocInputFunc: TypeAlias = (
     | Callable[[dict[str, JsonWithFinal]], JsonWithFinal]
     | Callable[[list[JsonWithFinal]], JsonWithFinal]
 )
+
+
+class DecimalParts(NamedTuple):
+    """Normalized decimal components.
+
+    Attributes:
+        digits (str): the significant decimal digits, with leading and
+            trailing zeroes removed.
+        exponent (int): the base-10 exponent of the first digit.
+    """
+
+    negative: bool
+    digits: str
+    exponent: int
