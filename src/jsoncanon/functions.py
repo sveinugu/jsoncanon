@@ -101,10 +101,11 @@ def raise_if_big_int_string(s: str, /) -> str:
     if is_canonical_big_int_string(s):
         raise ValueError(
             'Strings containing a canonical integer outside ECMAScript '
-            'safe bounds are not allowed when big_ints is '
-            f'"uniquely_as_string": is_canonical_big_int_string({s}). '
-            'This is to allow unique round-tripping of JSON data that '
-            'contain such integers. '
+            f'safe bounds ({-_ES6_MAX_SAFE_INTEGER}, '
+            f'{_ES6_MAX_SAFE_INTEGER}) are not allowed when '
+            f'big_ints=="uniquely_as_string": "{s}". This is to allow '
+            'unique round-tripping of JSON data that contain such '
+            'integers. '
         )
     return s
 
@@ -155,16 +156,6 @@ def dict_to_sorted_by_utf16_tuple(d: dict[str, JsonWithFinal], /) -> dict[str, J
 def parse_canonical_int(value: str) -> int | float:
     integer = int(value)
     return integer if is_es6_safe_integer(integer) else float(value)
-
-
-def parse_strict_int(value: str) -> int:
-    """Parse a JSON integer token, rejecting integers outside ES6 safe bounds.
-
-    Canonical JSON never contains an unquoted (bare number) integer outside
-    the safe range except when big_ints is 'as_float', so encountering one
-    here means the input is not in the expected canonical form.
-    """
-    return raise_if_big_int(int(value))
 
 
 def restore_unique_big_int_strings(json: Json) -> Json:

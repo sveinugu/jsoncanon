@@ -8,7 +8,6 @@ from jsoncanon.functions import (
     is_canonical_big_int_string,
     is_es6_safe_integer,
     parse_canonical_int,
-    parse_strict_int,
     raise_if_big_int,
     raise_if_big_int_string,
     restore_unique_big_int_strings,
@@ -166,19 +165,6 @@ def test_parse_canonical_int() -> None:
 
     assert parse_canonical_int('-9007199254740992') == -9007199254740992.0
     assert type(parse_canonical_int('-9007199254740992')) is float
-
-
-def test_parse_strict_int() -> None:
-    assert parse_strict_int('9007199254740991') == 9007199254740991
-    assert type(parse_strict_int('9007199254740991')) is int
-
-    assert parse_strict_int('-9007199254740991') == -9007199254740991
-
-    with pytest.raises(ValueError):
-        parse_strict_int('9007199254740992')
-
-    with pytest.raises(ValueError):
-        parse_strict_int('-9007199254740992')
 
 
 def test_restore_unique_big_int_strings() -> None:

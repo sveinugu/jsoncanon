@@ -8,6 +8,7 @@ from jsoncanon import (
     load_canonicalized,
     validate_canonicalized,
 )
+from jsoncanon.types import BigIntsOption
 
 
 def test_version() -> None:
@@ -239,53 +240,50 @@ def test_load_canonicalized_nested_containers() -> None:
     assert a[6] is False
 
 
-def test_load_canonicalized_default_big_ints() -> None:
-    # Default is 'as_string': matches canonical JSON where big integers are
-    # always quoted, so a bare big integer must be rejected.
+def test_load_canonicalized_default_big_ints_is_as_string() -> None:
     assert load_canonicalized(b'"9007199254740992"') == '9007199254740992'
-    with pytest.raises(ValueError):
-        load_canonicalized(b'9007199254740992')
+    assert load_canonicalized(b'9007199254740992') == 9007199254740992.0
 
 
-def test_load_canonicalized_big_ints_as_string() -> None:
-    assert load_canonicalized(b'"9007199254740992"', big_ints='as_string') == '9007199254740992'
-    assert load_canonicalized(b'"-9007199254740992"', big_ints='as_string') == '-9007199254740992'
+@pytest.mark.parametrize('big_ints', ['as_string', 'uniquely_as_string', 'as_float', 'raise'])
+def test_load_canonicalized_bare_numbers_are_mode_independent(big_ints: BigIntsOption) -> None:
+    # A safe bare integer always parses as int. A bare integer-looking token
+    # beyond the ES6 safe-integer bound only ever comes from a genuine float
+    # (application-level big integers are always quoted), so it round-trips
+    # as a float identically in every big_ints mode.
+    assert load_canonicalized(b'1', big_ints=big_ints) == 1
+    assert type(load_canonicalized(b'1', big_ints=big_ints)) is int
 
-    # A bare big integer is not canonical input for this mode.
-    with pytest.raises(ValueError):
-        load_canonicalized(b'9007199254740992', big_ints='as_string')
+    loaded_big = load_canonicalized(b'9007199254740992', big_ints=big_ints)
+    assert loaded_big == 9007199254740992.0
+    assert type(loaded_big) is float
 
 
-def test_load_canonicalized_big_ints_uniquely_as_string() -> None:
-    big_int = 9007199254740992
-    assert load_canonicalized(b'"9007199254740992"', big_ints='uniquely_as_string') == big_int
-    assert load_canonicalized(b'"-9007199254740992"', big_ints='uniquely_as_string') == -big_int
+@pytest.mark.parametrize('sign', ['', '-'])
+@pytest.mark.parametrize(
+    ('big_ints', 'restores_to_int'),
+    [
+        ('as_string', False),
+        ('as_float', False),
+        ('raise', False),
+        ('uniquely_as_string', True),
+    ],
+)
+def test_load_canonicalized_quoted_big_int_string(
+    sign: str, big_ints: BigIntsOption, restores_to_int: bool
+) -> None:
+    # A quoted canonical big-int string is only restored to a Python int by
+    # 'uniquely_as_string'; every other mode leaves it as a plain string.
+    token = f'{sign}9007199254740992'
+    expected: str | int = int(token) if restores_to_int else token
+    assert load_canonicalized(f'"{token}"'.encode(), big_ints=big_ints) == expected
 
+
+def test_load_canonicalized_uniquely_as_string_restores_values_not_keys() -> None:
     # Only values are restored to integers; dict keys remain strings.
     assert load_canonicalized(
         b'{"9007199254740992":"9007199254740992"}', big_ints='uniquely_as_string'
-    ) == {'9007199254740992': big_int}
-
-    # A bare big integer is not canonical input for this mode.
-    with pytest.raises(ValueError):
-        load_canonicalized(b'9007199254740992', big_ints='uniquely_as_string')
-
-
-def test_load_canonicalized_big_ints_as_float() -> None:
-    big_int = 9007199254740992
-    as_float = load_canonicalized(b'9007199254740992', big_ints='as_float')
-    assert type(as_float) is float
-    assert as_float == big_int
-
-
-def test_load_canonicalized_big_ints_raise() -> None:
-    safe_int = load_canonicalized(b'1', big_ints='raise')
-    assert type(safe_int) is int
-    assert safe_int == 1
-
-    # A bare big integer is not canonical input for this mode.
-    with pytest.raises(ValueError):
-        load_canonicalized(b'9007199254740992', big_ints='raise')
+    ) == {'9007199254740992': 9007199254740992}
 
 
 def test_load_canonicalized_rejects_invalid_constants() -> None:

@@ -8,7 +8,6 @@ from jsoncanon.functions import (
     dict_to_sorted_by_utf16_tuple,
     float_to_final_es6_str,
     parse_canonical_int,
-    parse_strict_int,
     raise_if_big_int,
     raise_if_big_int_string,
     restore_unique_big_int_strings,
@@ -50,6 +49,10 @@ def canonicalize(data: JsonScalar, big_ints: BigIntsOption = 'as_string') -> byt
 
 @overload
 def canonicalize(data: JsonWithTuple, big_ints: BigIntsOption = 'as_string') -> bytes: ...
+
+
+@overload
+def canonicalize(data: Json, big_ints: BigIntsOption = 'as_string') -> bytes: ...
 
 
 def canonicalize(data: object, big_ints: BigIntsOption = 'as_string') -> bytes:
@@ -123,13 +126,13 @@ def _canonicalize(data: JsonWithTuple, big_ints: BigIntsOption) -> bytes:
     return output.encode('utf8')
 
 
-def validate_canonicalized(data: object, big_ints: BigIntsOption = 'as_string') -> None:
-    CanonicalJsonValidator(data, big_ints).validate()
+def validate_canonicalized(data: object) -> None:
+    CanonicalJsonValidator(data).validate()
 
 
-def is_canonicalized(data: object, big_ints: BigIntsOption = 'as_string') -> bool:
+def is_canonicalized(data: object) -> bool:
     try:
-        validate_canonicalized(data, big_ints)
+        validate_canonicalized(data)
         return True
     except (ValueError, TypeError):
         return False
@@ -138,14 +141,14 @@ def is_canonicalized(data: object, big_ints: BigIntsOption = 'as_string') -> boo
 def load_canonicalized(
     data: bytes,
     big_ints: BigIntsOption = 'as_string',
-    validate_func: Callable[[object, BigIntsOption], None] | None = validate_canonicalized,
+    validate_func: Callable[[object], None] | None = validate_canonicalized,
 ) -> Json:
     if validate_func:
-        validate_func(data, big_ints)
+        validate_func(data)
 
     loaded: Json = json.loads(
         data,
-        parse_int=_select_parse_int(big_ints),
+        parse_int=parse_canonical_int,
         parse_float=float,
         parse_constant=_raise_invalid_json_constant,
     )
@@ -153,15 +156,6 @@ def load_canonicalized(
     if big_ints == 'uniquely_as_string':
         return restore_unique_big_int_strings(loaded)
     return loaded
-
-
-def _select_parse_int(big_ints: BigIntsOption) -> Callable[[str], int | float]:
-    # Only 'as_float' encodes big integers as bare (unquoted) numbers; every
-    # other mode quotes them as strings, so a bare big integer is only
-    # expected when big_ints is 'as_float'.
-    if big_ints == 'as_float':
-        return parse_canonical_int
-    return parse_strict_int
 
 
 def _raise_invalid_json_constant(value: str) -> NoReturn:

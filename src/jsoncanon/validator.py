@@ -1,16 +1,14 @@
 from typing import NoReturn
 
 from jsoncanon.functions import float_to_es6_str, is_es6_safe_integer, to_utf16_tuple
-from jsoncanon.types import BigIntsOption
 
 
 class CanonicalJsonValidator:
-    def __init__(self, data: object, big_ints: BigIntsOption) -> None:
+    def __init__(self, data: object) -> None:
         if not isinstance(data, bytes):
             raise TypeError(f'Data must be bytes, not {type(data).__name__}')
 
         self._data: bytes = data
-        self._big_ints = big_ints
         self._index = 0
 
     def validate(self) -> None:
@@ -134,12 +132,8 @@ class CanonicalJsonValidator:
         is_integer = self._parse_fraction_and_exponent()
 
         token = self._data[start : self._index].decode('ascii')
-        if is_integer:
-            integer = int(token)
-            if token != '-0' and is_es6_safe_integer(integer):
-                return
-            if self._big_ints != 'as_float':
-                self._fail('bare integer outside ECMAScript safe bounds')
+        if is_integer and token != '-0' and is_es6_safe_integer(int(token)):
+            return
 
         try:
             canonical_token = float_to_es6_str(float(token))
