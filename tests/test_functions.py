@@ -7,8 +7,11 @@ from jsoncanon.functions import (
     float_to_final_es6_str,
     is_canonical_big_int_string,
     is_es6_safe_integer,
+    parse_canonical_int,
+    parse_strict_int,
     raise_if_big_int,
     raise_if_big_int_string,
+    restore_unique_big_int_strings,
     to_utf16_tuple,
 )
 from jsoncanon.preprocess import JsonDataPreprocessor
@@ -152,3 +155,42 @@ def test_dict_to_sorted_by_utf16_tuple_recursive() -> None:
         'a': [{'דּ😀': 2, '😀דּ': 3}, 4],
         'b': 2,
     }
+
+
+def test_parse_canonical_int() -> None:
+    assert parse_canonical_int('9007199254740991') == 9007199254740991
+    assert type(parse_canonical_int('9007199254740991')) is int
+
+    assert parse_canonical_int('9007199254740992') == 9007199254740992.0
+    assert type(parse_canonical_int('9007199254740992')) is float
+
+    assert parse_canonical_int('-9007199254740992') == -9007199254740992.0
+    assert type(parse_canonical_int('-9007199254740992')) is float
+
+
+def test_parse_strict_int() -> None:
+    assert parse_strict_int('9007199254740991') == 9007199254740991
+    assert type(parse_strict_int('9007199254740991')) is int
+
+    assert parse_strict_int('-9007199254740991') == -9007199254740991
+
+    with pytest.raises(ValueError):
+        parse_strict_int('9007199254740992')
+
+    with pytest.raises(ValueError):
+        parse_strict_int('-9007199254740992')
+
+
+def test_restore_unique_big_int_strings() -> None:
+    assert restore_unique_big_int_strings('9007199254740992') == 9007199254740992
+    assert type(restore_unique_big_int_strings('9007199254740992')) is int
+
+    assert restore_unique_big_int_strings('9007199254740991') == '9007199254740991'
+    assert type(restore_unique_big_int_strings('9007199254740991')) is str
+
+    assert restore_unique_big_int_strings(
+        {'a': '9007199254740992', 'b': [1, '9007199254740992', 'x']}
+    ) == {'a': 9007199254740992, 'b': [1, 9007199254740992, 'x']}
+
+    assert restore_unique_big_int_strings(1) == 1
+    assert restore_unique_big_int_strings(None) is None

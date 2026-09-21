@@ -1,7 +1,7 @@
 from functools import lru_cache
 from struct import unpack
 
-from jsoncanon.types import DecimalParts, FinalJson, JsonWithFinal
+from jsoncanon.types import DecimalParts, FinalJson, Json, JsonWithFinal
 
 
 def float_to_final_es6_str(val: float, /) -> FinalJson:
@@ -150,3 +150,28 @@ def _key_to_utf16_tuple(keyval: tuple[str, JsonWithFinal]) -> tuple[int, ...]:
 
 def dict_to_sorted_by_utf16_tuple(d: dict[str, JsonWithFinal], /) -> dict[str, JsonWithFinal]:
     return dict(sorted(d.items(), key=_key_to_utf16_tuple))
+
+
+def parse_canonical_int(value: str) -> int | float:
+    integer = int(value)
+    return integer if is_es6_safe_integer(integer) else float(value)
+
+
+def parse_strict_int(value: str) -> int:
+    """Parse a JSON integer token, rejecting integers outside ES6 safe bounds.
+
+    Canonical JSON never contains an unquoted (bare number) integer outside
+    the safe range except when big_ints is 'as_float', so encountering one
+    here means the input is not in the expected canonical form.
+    """
+    return raise_if_big_int(int(value))
+
+
+def restore_unique_big_int_strings(json: Json) -> Json:
+    if isinstance(json, str) and is_canonical_big_int_string(json):
+        return int(json)
+    if isinstance(json, list):
+        return [restore_unique_big_int_strings(item) for item in json]
+    if isinstance(json, dict):
+        return {key: restore_unique_big_int_strings(value) for key, value in json.items()}
+    return json

@@ -9,9 +9,13 @@ features needed by the [Sequence Collections working group](https://seqcol.readt
 
 ```
 >>> import json
->>> from jsoncanon import canonicalize
+>>> from jsoncanon import canonicalize, load_canonicalized
 >>>
 >>> data = json.loads('{ "b": [1,3,7], "a": { "y": true, "x": null } }')
 >>> canonicalize(data)
 b'{"a":{"x":null,"y":true},"b":[1,3,7]}'
+
+>>> encoded = canonicalize(9007199254740992, big_ints='uniquely_as_string')
+>>> load_canonicalized(encoded, big_ints='uniquely_as_string')
+9007199254740992
 ```

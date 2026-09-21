@@ -1,8 +1,11 @@
+from typing import cast
+
 import pytest
 from jsoncanon import (
     __version__,
     canonicalize,
     is_canonicalized,
+    load_canonicalized,
     validate_canonicalized,
 )
 
@@ -198,3 +201,129 @@ def test_validate_canonicalized() -> None:
 def test_is_canonicalized() -> None:
     assert is_canonicalized(b'{"a":1}')
     assert not is_canonicalized(b'{"a": 1}')
+
+
+def test_load_canonicalized_empty_containers() -> None:
+    assert load_canonicalized(b'{}') == {}
+    assert load_canonicalized(b'[]') == []
+
+
+def test_load_canonicalized_scalars() -> None:
+    assert load_canonicalized(b'1') == 1
+    assert type(load_canonicalized(b'1')) is int
+
+    assert load_canonicalized(b'1.5') == 1.5
+    assert type(load_canonicalized(b'1.5')) is float
+
+    assert load_canonicalized(b'"text"') == 'text'
+    assert type(load_canonicalized(b'"text"')) is str
+
+    assert load_canonicalized(b'true') is True
+    assert load_canonicalized(b'false') is False
+    assert load_canonicalized(b'null') is None
+
+
+def test_load_canonicalized_nested_containers() -> None:
+    loaded = load_canonicalized(b'{"a":[1,1.5,"text",{"b":2},null,true,false]}')
+    assert loaded == {'a': [1, 1.5, 'text', {'b': 2}, None, True, False]}
+
+    assert isinstance(loaded, dict)
+    a = loaded['a']
+    assert isinstance(a, list)
+    assert type(a[0]) is int
+    assert type(a[1]) is float
+    assert type(a[2]) is str
+    assert isinstance(a[3], dict)
+    assert a[4] is None
+    assert a[5] is True
+    assert a[6] is False
+
+
+def test_load_canonicalized_default_big_ints() -> None:
+    # Default is 'as_string': matches canonical JSON where big integers are
+    # always quoted, so a bare big integer must be rejected.
+    assert load_canonicalized(b'"9007199254740992"') == '9007199254740992'
+    with pytest.raises(ValueError):
+        load_canonicalized(b'9007199254740992')
+
+
+def test_load_canonicalized_big_ints_as_string() -> None:
+    assert load_canonicalized(b'"9007199254740992"', big_ints='as_string') == '9007199254740992'
+    assert load_canonicalized(b'"-9007199254740992"', big_ints='as_string') == '-9007199254740992'
+
+    # A bare big integer is not canonical input for this mode.
+    with pytest.raises(ValueError):
+        load_canonicalized(b'9007199254740992', big_ints='as_string')
+
+
+def test_load_canonicalized_big_ints_uniquely_as_string() -> None:
+    big_int = 9007199254740992
+    assert load_canonicalized(b'"9007199254740992"', big_ints='uniquely_as_string') == big_int
+    assert load_canonicalized(b'"-9007199254740992"', big_ints='uniquely_as_string') == -big_int
+
+    # Only values are restored to integers; dict keys remain strings.
+    assert load_canonicalized(
+        b'{"9007199254740992":"9007199254740992"}', big_ints='uniquely_as_string'
+    ) == {'9007199254740992': big_int}
+
+    # A bare big integer is not canonical input for this mode.
+    with pytest.raises(ValueError):
+        load_canonicalized(b'9007199254740992', big_ints='uniquely_as_string')
+
+
+def test_load_canonicalized_big_ints_as_float() -> None:
+    big_int = 9007199254740992
+    as_float = load_canonicalized(b'9007199254740992', big_ints='as_float')
+    assert type(as_float) is float
+    assert as_float == big_int
+
+
+def test_load_canonicalized_big_ints_raise() -> None:
+    safe_int = load_canonicalized(b'1', big_ints='raise')
+    assert type(safe_int) is int
+    assert safe_int == 1
+
+    # A bare big integer is not canonical input for this mode.
+    with pytest.raises(ValueError):
+        load_canonicalized(b'9007199254740992', big_ints='raise')
+
+
+def test_load_canonicalized_rejects_invalid_constants() -> None:
+    for token in (b'NaN', b'Infinity', b'-Infinity'):
+        with pytest.raises(ValueError):
+            load_canonicalized(token)
+
+
+def test_load_canonicalized_validates_accepted_edge_cases() -> None:
+    assert load_canonicalized(b'{"\\r":0,"1":0,"\xc2\x80":0,"\xc3\xb6":0,"\xe2\x82\xac":0}') == {
+        '\r': 0,
+        '1': 0,
+        '\x80': 0,
+        'ö': 0,
+        '€': 0,
+    }
+    assert load_canonicalized(b'"\\b\\t\\n\\u000b\\f\\r"') == '\b\t\n\x0b\f\r'
+    assert load_canonicalized(b'1e+21') == 1e21
+
+
+def test_load_canonicalized_rejects_noncanonical_input_unless_validation_is_disabled() -> None:
+    cases = [
+        (b'{"a": 1}', {'a': 1}),
+        (b'{"b":1,"a":2}', {'b': 1, 'a': 2}),
+        (b'{"a":1,"a":2}', {'a': 2}),
+        (b'"\\u0041"', 'A'),
+        (b'1.0', 1.0),
+        (b'1e5', 100000.0),
+    ]
+    for data, expected in cases:
+        with pytest.raises(ValueError):
+            load_canonicalized(data)
+        assert load_canonicalized(data, validate_func=None) == expected
+
+
+def test_load_canonicalized_str_input() -> None:
+    data = cast(bytes, '{"number":1}')
+    with pytest.raises(TypeError):
+        load_canonicalized(data)
+
+    assert load_canonicalized(data, validate_func=None) == {'number': 1}
