@@ -108,6 +108,13 @@ def test_to_utf16_tuple() -> None:
     assert to_utf16_tuple('€1\rדּ😀\x80ö') == (8364, 49, 13, 64307, 55357, 56832, 128, 246)
 
 
+def test_to_utf16_tuple_cache() -> None:
+    to_utf16_tuple.cache_clear()
+    assert to_utf16_tuple('€') == (8364,)
+    to_utf16_tuple('€')
+    assert to_utf16_tuple.cache_info().hits == 1
+
+
 def test_dict_to_sorted_by_utf16_tuple() -> None:
     assert dict_to_sorted_by_utf16_tuple({'b': 2, 'a': 1}) == {'a': 1, 'b': 2}
     assert dict_to_sorted_by_utf16_tuple({'😀דּ': 2, 'דּ😀': 1}) == {'דּ😀': 1, '😀דּ': 2}

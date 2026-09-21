@@ -15,6 +15,7 @@ from jsoncanon.preprocess import (
 )
 from jsoncanon.types import (
     BigIntsOption,
+    FinalJson,
     JsonScalar,
     JsonWithTuple,
     JsonWithTupleT,
@@ -103,8 +104,12 @@ def _select_preprocessor(big_ints: BigIntsOption) -> JsonDataPreprocessor:
 
 def _canonicalize(data: JsonWithTuple, big_ints: BigIntsOption) -> bytes:
     preprocess = _select_preprocessor(big_ints)
+    preprocessed = preprocess(data)
+    if isinstance(preprocessed, FinalJson):
+        return preprocessed.encode()
+
     output = json.dumps(
-        preprocess(data),
+        preprocessed,
         separators=(',', ':'),
         ensure_ascii=False,
         allow_nan=False,

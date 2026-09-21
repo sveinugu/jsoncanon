@@ -1,3 +1,6 @@
+from functools import lru_cache
+from struct import unpack
+
 from jsoncanon.types import DecimalParts, FinalJson, JsonWithFinal
 
 
@@ -129,11 +132,11 @@ def raise_if_big_int(i: int, /) -> int:
         return i
 
 
+@lru_cache(maxsize=4096)
 def to_utf16_tuple(any_str: str) -> tuple[int, ...]:
     utf_16_bytes = any_str.encode('utf-16-be')
-    return tuple(
-        int.from_bytes(utf_16_bytes[i : i + 2], 'big') for i in range(0, len(utf_16_bytes), 2)
-    )
+    # `>` selects big-endian order; `H` decodes each two-byte UTF-16 code unit.
+    return unpack(f'>{len(utf_16_bytes) // 2}H', utf_16_bytes)
 
 
 def _key_to_utf16_tuple(keyval: tuple[str, JsonWithFinal]) -> tuple[int, ...]:
