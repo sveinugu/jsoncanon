@@ -4,6 +4,7 @@ from jsoncanon.functions import (
     big_int_as_str,
     dict_to_sorted_by_utf16_tuple,
     float_to_final_es6_str,
+    is_es6_safe_integer,
     raise_if_big_int,
     to_utf16_tuple,
 )
@@ -34,6 +35,13 @@ def test_big_int_as_str() -> None:
 
     assert big_int_as_str(-9007199254740992) == '-9007199254740992'
     assert type(big_int_as_str(-9007199254740992)) is str
+
+
+def test_is_es6_safe_integer() -> None:
+    assert is_es6_safe_integer(9007199254740991)
+    assert is_es6_safe_integer(-9007199254740991)
+    assert not is_es6_safe_integer(9007199254740992)
+    assert not is_es6_safe_integer(-9007199254740992)
 
 
 def test_big_int_as_float() -> None:

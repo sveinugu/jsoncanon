@@ -79,26 +79,26 @@ def _render_number_as_es6_tostring(number: DecimalParts) -> str:
 _ES6_MAX_SAFE_INTEGER = 2**53 - 1
 
 
-def _out_of_es6_sage_integer_bounds(i: int) -> bool:
-    return i > _ES6_MAX_SAFE_INTEGER or i < -_ES6_MAX_SAFE_INTEGER
+def is_es6_safe_integer(i: int) -> bool:
+    return -_ES6_MAX_SAFE_INTEGER <= i <= _ES6_MAX_SAFE_INTEGER
 
 
 def big_int_as_str(i: int, /) -> int | str:
-    if _out_of_es6_sage_integer_bounds(i):
+    if not is_es6_safe_integer(i):
         return str(i)
     else:
         return i
 
 
 def big_int_as_float(i: int, /) -> int | FinalJson:
-    if _out_of_es6_sage_integer_bounds(i):
+    if not is_es6_safe_integer(i):
         return float_to_final_es6_str(float(i))
     else:
         return i
 
 
 def raise_if_big_int(i: int, /) -> int:
-    if _out_of_es6_sage_integer_bounds(i):
+    if not is_es6_safe_integer(i):
         raise ValueError(
             'Integer value is outside ECMAScript safe  bounds '
             f'(abs({i}) > {_ES6_MAX_SAFE_INTEGER}).'
