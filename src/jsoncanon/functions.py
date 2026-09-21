@@ -90,6 +90,28 @@ def big_int_as_str(i: int, /) -> int | str:
         return i
 
 
+def raise_if_big_int_string(s: str, /) -> str:
+    if is_canonical_big_int_string(s):
+        raise ValueError(
+            'Strings containing a canonical integer outside ECMAScript '
+            'safe bounds are not allowed when big_ints is '
+            f'"uniquely_as_string": is_canonical_big_int_string({s}). '
+            'This is to allow unique round-tripping of JSON data that '
+            'contain such integers. '
+        )
+    return s
+
+
+def is_canonical_big_int_string(s: str) -> bool:
+    digits = s[1:] if s.startswith('-') else s
+    return (
+        digits.isascii()
+        and digits.isdecimal()
+        and not digits.startswith('0')
+        and not is_es6_safe_integer(int(s))
+    )
+
+
 def big_int_as_float(i: int, /) -> int | FinalJson:
     if not is_es6_safe_integer(i):
         return float_to_final_es6_str(float(i))

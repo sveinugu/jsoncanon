@@ -4,8 +4,10 @@ from jsoncanon.functions import (
     big_int_as_str,
     dict_to_sorted_by_utf16_tuple,
     float_to_final_es6_str,
+    is_canonical_big_int_string,
     is_es6_safe_integer,
     raise_if_big_int,
+    raise_if_big_int_string,
     to_utf16_tuple,
 )
 from jsoncanon.preprocess import JsonDataPreprocessor
@@ -53,6 +55,32 @@ def test_big_int_as_float() -> None:
     assert big_int_as_float(-9223372036854775295) == '-9223372036854775000'
     assert big_int_as_float(9223372036854775296) == '9223372036854776000'
     assert big_int_as_float(-9223372036854775296) == '-9223372036854776000'
+
+
+def test_is_canonical_big_int_string() -> None:
+    assert is_canonical_big_int_string('9007199254740992')
+    assert is_canonical_big_int_string('-9007199254740992')
+
+    assert not is_canonical_big_int_string('9007199254740991')
+    assert not is_canonical_big_int_string('-9007199254740991')
+    assert not is_canonical_big_int_string('09007199254740992')
+    assert not is_canonical_big_int_string('+9007199254740992')
+    assert not is_canonical_big_int_string('1e20')
+
+    arabic_indic_big_int = '٩٠٠٧١٩٩٢٥٤٧٤٠٩٩٢'
+    assert int(arabic_indic_big_int) == 9007199254740992
+    assert not is_canonical_big_int_string(arabic_indic_big_int)
+
+
+def test_raise_if_big_int_string() -> None:
+    with pytest.raises(ValueError):
+        raise_if_big_int_string('9007199254740992')
+
+    assert raise_if_big_int_string('9007199254740991')
+    assert raise_if_big_int_string('09007199254740992')
+
+    arabic_indic_big_int = '٩٠٠٧١٩٩٢٥٤٧٤٠٩٩٢'
+    assert raise_if_big_int_string(arabic_indic_big_int) == arabic_indic_big_int
 
 
 def test_raise_if_big_int() -> None:

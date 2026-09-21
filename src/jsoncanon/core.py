@@ -8,6 +8,7 @@ from jsoncanon.functions import (
     dict_to_sorted_by_utf16_tuple,
     float_to_final_es6_str,
     raise_if_big_int,
+    raise_if_big_int_string,
 )
 from jsoncanon.preprocess import (
     JsonDataPreprocessor,
@@ -55,17 +56,45 @@ _common_preproc_funcs: list[PreprocInputFunc] = [
 ]
 
 
-_preprocess_big_ints_as_str = JsonDataPreprocessor([big_int_as_str] + _common_preproc_funcs)
+_preprocess_big_ints_as_str = JsonDataPreprocessor(
+    [
+        big_int_as_str,
+        *_common_preproc_funcs,
+    ]
+)
 
-_preprocess_raise_on_big_ints = JsonDataPreprocessor([raise_if_big_int] + _common_preproc_funcs)
 
-_preprocess_allow_big_ints = JsonDataPreprocessor([big_int_as_float] + _common_preproc_funcs)
+_preprocess_big_ints_uniquely_as_str = JsonDataPreprocessor(
+    [
+        big_int_as_str,
+        raise_if_big_int_string,
+        *_common_preproc_funcs,
+    ]
+)
+
+
+_preprocess_raise_on_big_ints = JsonDataPreprocessor(
+    [
+        raise_if_big_int,
+        *_common_preproc_funcs,
+    ]
+)
+
+
+_preprocess_allow_big_ints = JsonDataPreprocessor(
+    [
+        big_int_as_float,
+        *_common_preproc_funcs,
+    ]
+)
 
 
 def _select_preprocessor(big_ints: BigIntsOption) -> JsonDataPreprocessor:
     match big_ints:
         case 'as_string':
             return _preprocess_big_ints_as_str
+        case 'uniquely_as_string':
+            return _preprocess_big_ints_uniquely_as_str
         case 'as_float':
             return _preprocess_allow_big_ints
         case 'raise':

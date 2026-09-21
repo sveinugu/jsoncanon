@@ -67,22 +67,57 @@ def test_ints() -> None:
     assert canonicalize(9007199254740991) == b'9007199254740991'
 
 
-def test_big_ints() -> None:
+def test_big_ints_default() -> None:
     assert canonicalize(9007199254740992) == b'"9007199254740992"'
     assert canonicalize(9007199254740993) == b'"9007199254740993"'
     assert canonicalize(9223372036854775295) == b'"9223372036854775295"'
     assert canonicalize(9223372036854775296) == b'"9223372036854775296"'
 
+
+def test_big_ints_as_string() -> None:
     assert canonicalize(9007199254740992, big_ints='as_string') == b'"9007199254740992"'
     assert canonicalize(9007199254740993, big_ints='as_string') == b'"9007199254740993"'
     assert canonicalize(9223372036854775295, big_ints='as_string') == b'"9223372036854775295"'
     assert canonicalize(9223372036854775296, big_ints='as_string') == b'"9223372036854775296"'
 
+
+def test_big_ints_uniquely_as_string() -> None:
+    assert canonicalize(9007199254740992, big_ints='uniquely_as_string') == b'"9007199254740992"'
+    assert canonicalize(9007199254740993, big_ints='uniquely_as_string') == b'"9007199254740993"'
+    assert (
+        canonicalize(9223372036854775295, big_ints='uniquely_as_string') == b'"9223372036854775295"'
+    )
+    assert (
+        canonicalize(9223372036854775296, big_ints='uniquely_as_string') == b'"9223372036854775296"'
+    )
+
+    # Disallow strings of big integers
+    with pytest.raises(ValueError):
+        canonicalize('9007199254740992', big_ints='uniquely_as_string')
+    with pytest.raises(ValueError):
+        canonicalize('9223372036854775296', big_ints='uniquely_as_string')
+
+    # Allow strings of big integers starting with 0
+    assert (
+        canonicalize('09007199254740992', big_ints='uniquely_as_string') == b'"09007199254740992"'
+    )
+
+    # Allow non-ascii strings of big integers
+    arabic_indic_big_int = '٩٠٠٧١٩٩٢٥٤٧٤٠٩٩٢'
+    assert int(arabic_indic_big_int) == 9007199254740992
+    assert canonicalize(arabic_indic_big_int, big_ints='uniquely_as_string') == (
+        f'"{arabic_indic_big_int}"'.encode()
+    )
+
+
+def test_big_ints_as_float() -> None:
     assert canonicalize(9007199254740992, big_ints='as_float') == b'9007199254740992'
     assert canonicalize(9007199254740993, big_ints='as_float') == b'9007199254740992'
     assert canonicalize(9223372036854775295, big_ints='as_float') == b'9223372036854775000'
     assert canonicalize(9223372036854775296, big_ints='as_float') == b'9223372036854776000'
 
+
+def test_big_ints_raise() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(9007199254740992, big_ints='raise')
     with pytest.raises(ValueError):
