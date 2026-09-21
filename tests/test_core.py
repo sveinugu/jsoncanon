@@ -1,22 +1,27 @@
 import pytest
-from jsoncanon import __version__, canonicalize
+from jsoncanon import (
+    __version__,
+    canonicalize,
+    is_canonicalized,
+    validate_canonicalized,
+)
 
 
 def test_version() -> None:
     assert __version__ == '0.2.3'
 
 
-def test_whitespace() -> None:
+def test_canonicalize_whitespace() -> None:
     assert canonicalize({'a': [2, 3, 4, {'b': 2}, 3]}) == b'{"a":[2,3,4,{"b":2},3]}'
 
 
-def test_literals() -> None:
+def test_canonicalize_literals() -> None:
     assert canonicalize(None) == b'null'
     assert canonicalize(True) == b'true'
     assert canonicalize(False) == b'false'
 
 
-def test_strings() -> None:
+def test_canonicalize_strings() -> None:
     for c in range(8):
         assert canonicalize(chr(c)) == b'"\\u00%(c)02x"' % {b'c': c}
 
@@ -59,7 +64,7 @@ def test_strings() -> None:
     assert canonicalize('ö') == bytes('"ö"', 'utf8')
 
 
-def test_ints() -> None:
+def test_canonicalize_ints() -> None:
     assert canonicalize(0) == b'0'
     assert canonicalize(-0) == b'0'
     assert canonicalize(12345) == b'12345'
@@ -67,21 +72,21 @@ def test_ints() -> None:
     assert canonicalize(9007199254740991) == b'9007199254740991'
 
 
-def test_big_ints_default() -> None:
+def test_canonicalize_big_ints_default() -> None:
     assert canonicalize(9007199254740992) == b'"9007199254740992"'
     assert canonicalize(9007199254740993) == b'"9007199254740993"'
     assert canonicalize(9223372036854775295) == b'"9223372036854775295"'
     assert canonicalize(9223372036854775296) == b'"9223372036854775296"'
 
 
-def test_big_ints_as_string() -> None:
+def test_canonicalize_big_ints_as_string() -> None:
     assert canonicalize(9007199254740992, big_ints='as_string') == b'"9007199254740992"'
     assert canonicalize(9007199254740993, big_ints='as_string') == b'"9007199254740993"'
     assert canonicalize(9223372036854775295, big_ints='as_string') == b'"9223372036854775295"'
     assert canonicalize(9223372036854775296, big_ints='as_string') == b'"9223372036854775296"'
 
 
-def test_big_ints_uniquely_as_string() -> None:
+def test_canonicalize_big_ints_uniquely_as_string() -> None:
     assert canonicalize(9007199254740992, big_ints='uniquely_as_string') == b'"9007199254740992"'
     assert canonicalize(9007199254740993, big_ints='uniquely_as_string') == b'"9007199254740993"'
     assert (
@@ -110,14 +115,14 @@ def test_big_ints_uniquely_as_string() -> None:
     )
 
 
-def test_big_ints_as_float() -> None:
+def test_canonicalize_big_ints_as_float() -> None:
     assert canonicalize(9007199254740992, big_ints='as_float') == b'9007199254740992'
     assert canonicalize(9007199254740993, big_ints='as_float') == b'9007199254740992'
     assert canonicalize(9223372036854775295, big_ints='as_float') == b'9223372036854775000'
     assert canonicalize(9223372036854775296, big_ints='as_float') == b'9223372036854776000'
 
 
-def test_big_ints_raise() -> None:
+def test_canonicalize_big_ints_raise() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(9007199254740992, big_ints='raise')
     with pytest.raises(ValueError):
@@ -128,7 +133,7 @@ def test_big_ints_raise() -> None:
         assert canonicalize(9223372036854775295, big_ints='raise')
 
 
-def test_floats() -> None:
+def test_canonicalize_floats() -> None:
     with pytest.raises(ValueError):
         assert canonicalize(float('nan'))
     with pytest.raises(ValueError):
@@ -158,7 +163,7 @@ def test_floats() -> None:
     assert canonicalize(0.1 + 0.2) == b'0.30000000000000004'
 
 
-def test_sorting() -> None:
+def test_canonicalize_sorting() -> None:
     in_data = {
         '€': 'Euro Sign',
         '\r': 'Carriage Return',
@@ -181,3 +186,15 @@ def test_sorting() -> None:
     )
 
     assert canonicalize(in_data) == out_data
+
+
+def test_validate_canonicalized() -> None:
+    validate_canonicalized(b'{"a":1}')
+
+    with pytest.raises(ValueError):
+        validate_canonicalized(b'{"a": 1}')
+
+
+def test_is_canonicalized() -> None:
+    assert is_canonicalized(b'{"a":1}')
+    assert not is_canonicalized(b'{"a": 1}')

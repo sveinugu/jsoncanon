@@ -3,6 +3,7 @@ from jsoncanon.functions import (
     big_int_as_float,
     big_int_as_str,
     dict_to_sorted_by_utf16_tuple,
+    float_to_es6_str,
     float_to_final_es6_str,
     is_canonical_big_int_string,
     is_es6_safe_integer,
@@ -15,14 +16,20 @@ from jsoncanon.types import FinalJson, JsonWithFinal, JsonWithTuple
 
 
 def test_float_to_final_es6_str() -> None:
-    assert float_to_final_es6_str(333333333.33333329) == FinalJson('333333333.3333333')
-    assert float_to_final_es6_str(1e30) == FinalJson('1e+30')
-    assert float_to_final_es6_str(4.50) == FinalJson('4.5')
-    assert float_to_final_es6_str(2e-3) == FinalJson('0.002')
-    assert float_to_final_es6_str(0.000000000000000000000000001) == FinalJson('1e-27')
-    assert float_to_final_es6_str(float(9007199254740992)) == FinalJson('9007199254740992')
-    assert float_to_final_es6_str(float(9007199254740993)) == FinalJson('9007199254740992')
-    assert float_to_final_es6_str(float(9223372036854775295)) == FinalJson('9223372036854775000')
+    rendered = float_to_final_es6_str(1e21)
+    assert rendered == '1e+21'
+    assert type(rendered) is FinalJson
+
+
+def test_float_to_es6_str() -> None:
+    assert float_to_es6_str(333333333.33333329) == '333333333.3333333'
+    assert float_to_es6_str(1e30) == '1e+30'
+    assert float_to_es6_str(4.50) == '4.5'
+    assert float_to_es6_str(2e-3) == '0.002'
+    assert float_to_es6_str(0.000000000000000000000000001) == '1e-27'
+    assert float_to_es6_str(float(9007199254740992)) == '9007199254740992'
+    assert float_to_es6_str(float(9007199254740993)) == '9007199254740992'
+    assert float_to_es6_str(float(9223372036854775295)) == '9223372036854775000'
 
 
 def test_big_int_as_str() -> None:

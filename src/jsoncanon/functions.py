@@ -5,6 +5,11 @@ from jsoncanon.types import DecimalParts, FinalJson, JsonWithFinal
 
 
 def float_to_final_es6_str(val: float, /) -> FinalJson:
+    """Wrap float_to_es6_str() output in FinalJson."""
+    return FinalJson(float_to_es6_str(val))
+
+
+def float_to_es6_str(val: float, /) -> str:
     """Return a finite float as an RFC 8785 ECMAScript number token.
 
     Python's ``repr`` supplies the shortest round-tripping decimal
@@ -16,16 +21,15 @@ def float_to_final_es6_str(val: float, /) -> FinalJson:
     and infinities are not permitted by RFC 8785.
 
     Returns:
-        FinalJson: the canonical string representation of the float.
+        The canonical string representation of the float.
     """
     if val != val or val in (float('inf'), float('-inf')):
         raise ValueError('NaN and Infinity are not allowed by RFC 8785')
     elif val == 0:
-        return FinalJson('0')  # also normalizes -0.0
+        return '0'  # also normalizes -0.0
     else:
         decimal_parts = _split_repr_into_decimal_parts(repr(val))
-        out = _render_number_as_es6_tostring(decimal_parts)
-        return FinalJson(out)
+        return _render_number_as_es6_tostring(decimal_parts)
 
 
 def _split_repr_into_decimal_parts(float_repr: str) -> DecimalParts:

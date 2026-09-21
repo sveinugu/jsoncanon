@@ -21,6 +21,7 @@ from jsoncanon.types import (
     JsonWithTupleT,
     PreprocInputFunc,
 )
+from jsoncanon.validator import CanonicalJsonValidator
 
 
 @overload
@@ -116,3 +117,15 @@ def _canonicalize(data: JsonWithTuple, big_ints: BigIntsOption) -> bytes:
         cls=FinalJsonEncoder,
     )
     return output.encode('utf8')
+
+
+def validate_canonicalized(data: object, big_ints: BigIntsOption = 'as_string') -> None:
+    CanonicalJsonValidator(data, big_ints).validate()
+
+
+def is_canonicalized(data: object, big_ints: BigIntsOption = 'as_string') -> bool:
+    try:
+        validate_canonicalized(data, big_ints)
+        return True
+    except (ValueError, TypeError):
+        return False
