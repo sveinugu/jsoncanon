@@ -5,33 +5,7 @@ from typing import Annotated
 import pytest
 
 from jsoncanon.preprocess import JsonDataPreprocessor
-from jsoncanon.types import FinalJson, JsonWithFinal, JsonWithTuple, PreprocFunc
-
-
-def invalid_preproc_func_two_params(_i: int, _s: str) -> str: ...  # type: ignore[empty-body]
-
-
-def invalid_preproc_func_one_param_pos_or_keyword(_s: str) -> str: ...  # type: ignore[empty-body]
-
-
-def invalid_preproc_func_one_param_no_annotation(_s) -> str: ...  # type: ignore[empty-body, no-untyped-def]
-
-
-def invalid_preproc_func_no_return_annotation(_s) -> str: ...  # type: ignore[empty-body, no-untyped-def]
-
-
-@pytest.mark.parametrize(
-    'preproc_func',
-    [  # pyright: ignore[reportUnknownArgumentType]
-        invalid_preproc_func_two_params,
-        invalid_preproc_func_one_param_pos_or_keyword,
-        invalid_preproc_func_one_param_no_annotation,
-        invalid_preproc_func_no_return_annotation,
-    ],
-)
-def test_json_preprocessor_valid_funcs(preproc_func: PreprocFunc) -> None:
-    with pytest.raises(AssertionError):
-        JsonDataPreprocessor([preproc_func])
+from jsoncanon.types import FinalJson, JsonWithFinal, JsonWithTuple
 
 
 @pytest.fixture
@@ -44,9 +18,6 @@ def json_data_preprocessor() -> JsonDataPreprocessor:
 
     def float_halve_func(f: float, /) -> float:
         return f / 2
-
-    def float_to_raw_json_func(f: float, /) -> FinalJson:
-        return FinalJson(str(f))
 
     def bool_invert_func(b: bool, /) -> bool:
         return not b
@@ -61,16 +32,15 @@ def json_data_preprocessor() -> JsonDataPreprocessor:
         return [_ for _ in reversed(li)]
 
     return JsonDataPreprocessor(
-        [
-            str_upper_func,
-            int_increase_func,
-            float_halve_func,
-            float_to_raw_json_func,
-            bool_invert_func,
-            none_to_raw_json_func,
-            dict_upper_keys_func,
-            list_reverse_func,
-        ]
+        {
+            'str': str_upper_func,
+            'int': int_increase_func,
+            'float': float_halve_func,
+            'bool': bool_invert_func,
+            'NoneType': none_to_raw_json_func,
+            'dict': dict_upper_keys_func,
+            'list': list_reverse_func,
+        }
     )
 
 
@@ -97,12 +67,12 @@ def test_preprocess_json_data_core_types(
         'OUTER_KEY': [
             ['MAYBE', True, False],
             {
-                'KEY_1': [FinalJson('None'), True, FinalJson('2.5'), 4, 'STRING'],
-                'KEY_2': [FinalJson('None'), False, FinalJson('3.0'), 6, 'CONTENT'],
+                'KEY_1': [FinalJson('None'), True, 2.5, 4, 'STRING'],
+                'KEY_2': [FinalJson('None'), False, 3.0, 6, 'CONTENT'],
             },
             FinalJson('None'),
             False,
-            FinalJson('1.0'),
+            1.0,
             2,
             'TEXT',
         ],

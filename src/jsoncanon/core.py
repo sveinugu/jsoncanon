@@ -22,7 +22,7 @@ from jsoncanon.types import (
     JsonScalar,
     JsonWithTuple,
     JsonWithTupleT,
-    PreprocInputFunc,
+    PreprocFuncDict,
 )
 from jsoncanon.validator import CanonicalJsonValidator
 
@@ -59,42 +59,42 @@ def canonicalize(data: object, big_ints: BigIntsOption = 'as_string') -> bytes:
     return _canonicalize(cast(JsonWithTuple, data), big_ints)
 
 
-_common_preproc_funcs: list[PreprocInputFunc] = [
-    float_to_final_es6_str,
-    dict_to_sorted_by_utf16_tuple,
-]
+_common_preproc_funcs: PreprocFuncDict = {
+    'float': float_to_final_es6_str,
+    'dict': dict_to_sorted_by_utf16_tuple,
+}
 
 
 _preprocess_big_ints_as_str = JsonDataPreprocessor(
-    [
-        big_int_as_str,
-        *_common_preproc_funcs,
-    ]
+    _common_preproc_funcs
+    | {
+        'int': big_int_as_str,
+    }
 )
 
 
 _preprocess_big_ints_uniquely_as_str = JsonDataPreprocessor(
-    [
-        big_int_as_str,
-        raise_if_big_int_string,
-        *_common_preproc_funcs,
-    ]
+    _common_preproc_funcs
+    | {
+        'int': big_int_as_str,
+        'str': raise_if_big_int_string,
+    }
 )
 
 
 _preprocess_raise_on_big_ints = JsonDataPreprocessor(
-    [
-        raise_if_big_int,
-        *_common_preproc_funcs,
-    ]
+    _common_preproc_funcs
+    | {
+        'int': raise_if_big_int,
+    }
 )
 
 
 _preprocess_allow_big_ints = JsonDataPreprocessor(
-    [
-        big_int_as_float,
-        *_common_preproc_funcs,
-    ]
+    _common_preproc_funcs
+    | {
+        'int': big_int_as_float,
+    }
 )
 
 
@@ -122,6 +122,7 @@ def _canonicalize(data: JsonWithTuple, big_ints: BigIntsOption) -> bytes:
         ensure_ascii=False,
         allow_nan=False,
     )
+    del preprocessed
     return output.encode('utf8')
 
 
