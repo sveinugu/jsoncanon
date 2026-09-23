@@ -4,6 +4,7 @@ from binascii import a2b_hex
 from json import loads
 
 import pytest
+
 from jsoncanon import canonicalize
 
 TESTDATA_DIR = os.path.join(os.path.dirname(__file__), 'json-canonicalization', 'testdata')

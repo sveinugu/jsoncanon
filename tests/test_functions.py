@@ -1,4 +1,5 @@
 import pytest
+
 from jsoncanon.functions import (
     big_int_as_float,
     big_int_as_str,

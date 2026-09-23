@@ -2,6 +2,7 @@ import sys
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from jsoncanon import canonicalize, load_canonicalized
 from jsoncanon.functions import is_canonical_big_int_string
 from jsoncanon.types import BigIntsOption, JsonWithTuple

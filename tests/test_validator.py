@@ -1,4 +1,5 @@
 import pytest
+
 from jsoncanon.validator import CanonicalJsonValidator
 
 

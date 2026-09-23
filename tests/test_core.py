@@ -1,6 +1,7 @@
 from typing import cast
 
 import pytest
+
 from jsoncanon import (
     __version__,
     canonicalize,

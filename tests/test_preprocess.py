@@ -3,6 +3,7 @@ from types import MappingProxyType
 from typing import Annotated
 
 import pytest
+
 from jsoncanon.preprocess import JsonDataPreprocessor
 from jsoncanon.types import FinalJson, JsonWithFinal, JsonWithTuple, PreprocFunc
 
