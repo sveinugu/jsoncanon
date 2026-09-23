@@ -6,10 +6,16 @@ from collections.abc import Iterator
 from typing import Any
 
 from .models import Baseline, Benchmark, BenchmarkResult, CaseBenchmarkResult, Score
-from .statistics import confidence_interval, geometric_mean_scores, relative_scores
+from .statistics import (
+    confidence_interval,
+    geometric_mean_memory_scores,
+    geometric_mean_scores,
+    relative_memory_scores,
+    relative_scores,
+)
 
 COLUMN_WIDTH = 27
-STATISTIC_WIDTH = 24
+STATISTIC_WIDTH = 34
 
 
 def column_labels(name: str) -> tuple[str, str]:
@@ -50,6 +56,18 @@ def format_timing(
     return f'{result.median * 1_000:.3f} [{lower * 1_000:.3f}, {upper * 1_000:.3f}]'
 
 
+def format_memory(result: BenchmarkResult | None) -> str:
+    """Format peak traced Python allocation in kibibytes."""
+    if result is None:
+        return 'incompatible'
+    return f'{result.peak_memory_bytes / 1024:.1f}'
+
+
+def format_memory_score(score: float | None) -> str:
+    """Format a peak-memory ratio without a confidence interval."""
+    return 'incompatible' if score is None else f'{score:.0f}%'
+
+
 def format_score(score: Score | None) -> str:
     """Format a relative score with its 95% confidence interval."""
     if score is None:
@@ -69,13 +87,16 @@ def baseline_index(benchmark_definition: Benchmark[Any, Any], baseline: Baseline
 
 
 def print_case_rows(case: CaseBenchmarkResult, benchmark_definition: Benchmark[Any, Any]) -> None:
-    """Print timing and relative-score rows for one measured dataset."""
+    """Print timing, peak-memory, and relative-score rows for one dataset."""
     timings = [
         format_timing(result, samples)
         for result, samples in zip(case.results, case.bootstrap_median_samples, strict=True)
     ]
     timing_result_content = f'{"time (ms)":<{STATISTIC_WIDTH}}' + ''.join(
         f' {timing:<{COLUMN_WIDTH}}' for timing in timings
+    )
+    memory_result_content = f'{"memory peak (KiB)":<{STATISTIC_WIDTH}}' + ''.join(
+        f' {format_memory(result):<{COLUMN_WIDTH}}' for result in case.results
     )
     print(
         f'{case.name:<20} {case.byte_size:<10,} '
@@ -85,14 +106,23 @@ def print_case_rows(case: CaseBenchmarkResult, benchmark_definition: Benchmark[A
         print(f'{"":<20} {"":<10} {timing_result_content}')
 
     for baseline in benchmark_definition.baselines:
+        baseline_position = baseline_index(benchmark_definition, baseline)
         scores = relative_scores(
             case.results,
             case.bootstrap_median_samples,
-            baseline_index(benchmark_definition, baseline),
+            baseline_position,
         )
         print(
-            f'{"":<20} {"":<10} {f"% {baseline.label}":<{STATISTIC_WIDTH}}'
+            f'{"":<20} {"":<10} {f"time % {baseline.label}":<{STATISTIC_WIDTH}}'
             + ''.join(f' {format_score(score):<{COLUMN_WIDTH}}' for score in scores)
+        )
+    print(f'{"":<20} {"":<10} {memory_result_content}')
+    for baseline in benchmark_definition.baselines:
+        baseline_position = baseline_index(benchmark_definition, baseline)
+        memory_scores = relative_memory_scores(case.results, baseline_position)
+        print(
+            f'{"":<20} {"":<10} {f"peak % {baseline.label}":<{STATISTIC_WIDTH}}'
+            + ''.join(f' {format_memory_score(score):<{COLUMN_WIDTH}}' for score in memory_scores)
         )
     if benchmark_definition.baselines:
         print()
@@ -104,10 +134,18 @@ def print_summary_rows(
     """Print geometric-mean relative scores for every configured baseline."""
     print('Summary')
     for baseline in benchmark_definition.baselines:
-        scores = geometric_mean_scores(cases, baseline_index(benchmark_definition, baseline))
+        baseline_position = baseline_index(benchmark_definition, baseline)
+        scores = geometric_mean_scores(cases, baseline_position)
         print(
-            f'{"":<20} {"":<10} {f"geomean % {baseline.label}":<{STATISTIC_WIDTH}}'
+            f'{"":<20} {"":<10} {f"geomean time % {baseline.label}":<{STATISTIC_WIDTH}}'
             + ''.join(f' {format_score(score):<{COLUMN_WIDTH}}' for score in scores)
+        )
+    for baseline in benchmark_definition.baselines:
+        baseline_position = baseline_index(benchmark_definition, baseline)
+        memory_scores = geometric_mean_memory_scores(cases, baseline_position)
+        print(
+            f'{"":<20} {"":<10} {f"geomean peak % {baseline.label}":<{STATISTIC_WIDTH}}'
+            + ''.join(f' {format_memory_score(score):<{COLUMN_WIDTH}}' for score in memory_scores)
         )
     print()
 

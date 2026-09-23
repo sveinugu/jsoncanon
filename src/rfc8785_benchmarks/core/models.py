@@ -54,9 +54,10 @@ class Score:
 
 @dataclass(frozen=True)
 class BenchmarkResult:
-    """Per-trial durations for one implementation and dataset."""
+    """Timing samples and peak traced memory for one implementation and dataset."""
 
     samples: tuple[float, ...]
+    peak_memory_bytes: int
 
     @property
     def median(self) -> float:

@@ -15,8 +15,9 @@ def run_real_cases(suite: str, iterations: int | None, trials: int) -> None:
     """Load, verify, and benchmark real-world fixtures across library implementations."""
     datasets = load_datasets(suite)
     print('Fixtures are checksum-validated. Timings are milliseconds per call.')
+    print('Peak memory is traced Python allocation in KiB for one post-timing call.')
     print('Timings and scores show median [bootstrap 95% confidence interval].')
-    print('Scores show relative time; each named competitor is 100% on its score row.')
+    print('Time and peak-memory scores are relative; each baseline is 100% on its score row.')
     print('Summary scores are the geometric mean of compatible datasets.')
     print(f'Median of {trials} trials.')
     factory_cache: FactoryCache = {}

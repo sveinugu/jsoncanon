@@ -67,6 +67,19 @@ def relative_scores(
     ]
 
 
+def relative_memory_scores(
+    results: tuple[BenchmarkResult | None, ...], baseline_index: int
+) -> list[float | None]:
+    """Return peak-memory ratios relative to the selected baseline."""
+    baseline = results[baseline_index]
+    if baseline is None or baseline.peak_memory_bytes == 0:
+        return [None] * len(results)
+    return [
+        result.peak_memory_bytes / baseline.peak_memory_bytes * 100 if result is not None else None
+        for result in results
+    ]
+
+
 def geometric_mean_scores(
     cases: tuple[CaseBenchmarkResult, ...], baseline_index: int
 ) -> list[Score | None]:
@@ -102,4 +115,21 @@ def geometric_mean_scores(
             for sample_index in range(BOOTSTRAP_SAMPLES)
         ]
         scores.append(Score(point, *confidence_interval(distribution)))
+    return scores
+
+
+def geometric_mean_memory_scores(
+    cases: tuple[CaseBenchmarkResult, ...], baseline_index: int
+) -> list[float | None]:
+    """Return geometric-mean peak-memory ratios across compatible datasets."""
+    scores: list[float | None] = []
+    for implementation_index in range(len(cases[0].results)):
+        ratios = [
+            result.peak_memory_bytes / baseline.peak_memory_bytes * 100
+            for case in cases
+            if (result := case.results[implementation_index]) is not None
+            and (baseline := case.results[baseline_index]) is not None
+            and baseline.peak_memory_bytes > 0
+        ]
+        scores.append(statistics.geometric_mean(ratios) if ratios else None)
     return scores

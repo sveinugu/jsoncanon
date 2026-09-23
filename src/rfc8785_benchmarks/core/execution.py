@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gc
 import time
+import tracemalloc
 from collections.abc import Iterator
 from dataclasses import InitVar, dataclass, field
 from typing import Generic, cast
@@ -87,7 +88,7 @@ def run_benchmark(
     iterations: int,
     trials: int,
 ) -> BenchmarkResult:
-    """Return per-trial per-call durations in seconds."""
+    """Return timing samples and peak Python allocation for one operation."""
     durations: list[float] = []
     for _ in range(trials):
         gc_was_enabled = gc.isenabled()
@@ -100,7 +101,14 @@ def run_benchmark(
         finally:
             if gc_was_enabled:
                 gc.enable()
-    return BenchmarkResult(tuple(durations))
+    gc.collect()
+    tracemalloc.start()
+    try:
+        function(value)
+        _, peak_memory_bytes = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    return BenchmarkResult(tuple(durations), peak_memory_bytes)
 
 
 def check_expected_output(actual: object, expected: object) -> None:

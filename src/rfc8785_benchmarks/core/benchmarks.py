@@ -79,6 +79,13 @@ def canonical_baselines() -> tuple[Baseline, Baseline]:
     )
 
 
+def stream_write_baselines() -> tuple[Baseline, Baseline]:
+    return (
+        Baseline('vs jcs', 'jcs'),
+        Baseline('vs rfc8785 (dump)', 'rfc8785 (dump)'),
+    )
+
+
 def decoded_baselines() -> tuple[Baseline, Baseline]:
     return (
         Baseline('vs json', 'json.loads'),
@@ -104,7 +111,7 @@ def get_stream_write_benchmark() -> Benchmark[Json, bytes]:
         stream_write_implementations(),
         canonical_input,
         canonical_output,
-        canonical_baselines(),
+        stream_write_baselines(),
     )
 
 
