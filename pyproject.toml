@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 requires-python = ">=3.10,<4.0"
-dependencies = []
+dependencies = ["simplejson>=4.1.2"]
 
 [[project.authors]]
 name = "Sveinung Gundersen"
@@ -40,6 +40,8 @@ dev = [
     "mypy>=2.3.0,<3",
     "taplo>=0.9.0,<1",
     "hypothesis>=6.168.0",
+    "rfc8785>=0.1.4",
+    "jcs>=0.2.1",
 ]
 
 [build-system]

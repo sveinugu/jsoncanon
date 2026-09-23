@@ -1,0 +1,54 @@
+{
+  "source": "https://sample.json-format.com/",
+  "fixtures": [
+    {
+      "id": "orders_tiny",
+      "filename": "orders_tiny.json",
+      "url": "https://files.jsons.live/Amazon/1-level/1-KB/minified.json",
+      "sha256": "3c392e4c73b0efc037df1fbe0e7d859b16d3f41a2c011f3d75101992ae78d5f7",
+      "suites": ["default", "quick"]
+    },
+    {
+      "id": "bookings_small",
+      "filename": "bookings_small.json",
+      "url": "https://files.jsons.live/Bookings/1-level/10-KB/minified.json",
+      "sha256": "457d5755b95a3cbee907c05cd1089bf0ba7f93c4513b8b3ebf0a28fc2e64e0fa",
+      "suites": ["default", "quick"]
+    },
+    {
+      "id": "crypto_small",
+      "filename": "crypto_small.json",
+      "url": "https://files.jsons.live/crypto_historical_365days/1-level/10-MB/minified.json",
+      "sha256": "2b103adfc5ab510cebf9bbb687acc11607a9742d336e381d804d60ac6ab91c10",
+      "suites": ["default", "quick"]
+    },
+    {
+      "id": "employees_deep",
+      "filename": "employees_deep.json",
+      "url": "https://files.jsons.live/employees/10-level/1-MB/formatted.json",
+      "sha256": "c5c32a3c939ac4e24b8342f5504423c6e05fea8a2d9b6bca3981dbb6867afaa5",
+      "suites": ["default"]
+    },
+    {
+      "id": "chess_medium",
+      "filename": "chess_medium.json",
+      "url": "https://files.jsons.live/Chess-Game-Dataset/1-level/1-MB/minified.json",
+      "sha256": "3a3e838d66d019a264ab3b9f17935c406f4fa3edf9b37d5362f86e87b47d9ddd",
+      "suites": ["default"]
+    },
+    {
+      "id": "players_wide",
+      "filename": "players_wide.json",
+      "url": "https://files.jsons.live/EAFC26-Men/1-level/1-MB/minified.json",
+      "sha256": "4daded254ae07e69a2556c1efe9a535cebfa4e0f804dbe8d920f027f2283c998",
+      "suites": ["default"]
+    },
+    {
+      "id": "orders_large",
+      "filename": "orders_large.json",
+      "url": "https://files.jsons.live/Amazon/1-level/10-MB/minified.json",
+      "sha256": "97760b11fc2cd85aaa98bb378ae3381dddbbfc50394758cf4a33b81a75e882b4",
+      "suites": ["default"]
+    }
+  ]
+}
