@@ -54,7 +54,7 @@ packages = ["src/jsoncanon"]
 
 [tool.ruff]
 line-length = 100
-src = ["src/jsoncanon", "tests"]
+src = ["src", "tests"]
 extend-exclude = ["tests/json-canonicalization"]
 force-exclude = true
 target-version = "py310"
@@ -76,11 +76,11 @@ force-single-line = false
 quote-style = "single"
 
 [tool.pyright]
-include = ["src/jsoncanon", "tests"]
+include = ["src", "tests"]
 exclude = ["tests/json-canonicalization"]
 typeCheckingMode = "strict"
 
 [tool.mypy]
 strict = true
-files = ["src/jsoncanon", "tests"]
+files = ["src", "tests"]
 exclude = ["tests/json-canonicalization"]
