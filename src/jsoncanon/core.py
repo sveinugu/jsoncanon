@@ -1,7 +1,7 @@
-import json
 from typing import Callable, NoReturn, cast, overload
 
-from jsoncanon.encoder import FinalJsonEncoder
+import simplejson
+
 from jsoncanon.functions import (
     big_int_as_float,
     big_int_as_str,
@@ -114,14 +114,13 @@ def _canonicalize(data: JsonWithTuple, big_ints: BigIntsOption) -> bytes:
     preprocess = _select_preprocessor(big_ints)
     preprocessed = preprocess(data)
     if isinstance(preprocessed, FinalJson):
-        return preprocessed.encode()
+        return preprocessed.encoded_json.encode('utf8')
 
-    output = json.dumps(
+    output: str = simplejson.dumps(
         preprocessed,
         separators=(',', ':'),
         ensure_ascii=False,
         allow_nan=False,
-        cls=FinalJsonEncoder,
     )
     return output.encode('utf8')
 
@@ -146,7 +145,7 @@ def load_canonicalized(
     if validate_func:
         validate_func(data)
 
-    loaded: Json = json.loads(
+    loaded: Json = simplejson.loads(
         data,
         parse_int=parse_canonical_int,
         parse_float=float,

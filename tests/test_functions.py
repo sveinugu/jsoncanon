@@ -20,7 +20,7 @@ from jsoncanon.types import FinalJson, JsonWithFinal, JsonWithTuple
 
 def test_float_to_final_es6_str() -> None:
     rendered = float_to_final_es6_str(1e21)
-    assert rendered == '1e+21'
+    assert rendered == FinalJson('1e+21')
     assert type(rendered) is FinalJson
 
 
@@ -59,12 +59,12 @@ def test_is_es6_safe_integer() -> None:
 def test_big_int_as_float() -> None:
     assert big_int_as_float(9007199254740991) == 9007199254740991
     assert big_int_as_float(-9007199254740991) == -9007199254740991
-    assert big_int_as_float(9007199254740992) == '9007199254740992'
-    assert big_int_as_float(-9007199254740992) == '-9007199254740992'
-    assert big_int_as_float(9223372036854775295) == '9223372036854775000'
-    assert big_int_as_float(-9223372036854775295) == '-9223372036854775000'
-    assert big_int_as_float(9223372036854775296) == '9223372036854776000'
-    assert big_int_as_float(-9223372036854775296) == '-9223372036854776000'
+    assert big_int_as_float(9007199254740992) == FinalJson('9007199254740992')
+    assert big_int_as_float(-9007199254740992) == FinalJson('-9007199254740992')
+    assert big_int_as_float(9223372036854775295) == FinalJson('9223372036854775000')
+    assert big_int_as_float(-9223372036854775295) == FinalJson('-9223372036854775000')
+    assert big_int_as_float(9223372036854775296) == FinalJson('9223372036854776000')
+    assert big_int_as_float(-9223372036854775296) == FinalJson('-9223372036854776000')
 
 
 def test_is_canonical_big_int_string() -> None:

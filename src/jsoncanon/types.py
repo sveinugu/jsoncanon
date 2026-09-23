@@ -1,5 +1,13 @@
 from typing import Callable, Literal, NamedTuple, TypeAlias, TypeVar
 
+from simplejson import RawJSON
+
+
+class FinalJson(RawJSON):
+    def __eq__(self, other: 'FinalJson | object') -> bool:
+        return type(other) == FinalJson and other.encoded_json == self.encoded_json
+
+
 BigIntsOption: TypeAlias = Literal['as_string', 'uniquely_as_string', 'as_float', 'raise']
 
 JsonScalar: TypeAlias = str | int | float | bool | None
@@ -10,10 +18,6 @@ JsonWithTuple: TypeAlias = (
     JsonScalar | dict[str, 'JsonWithTuple'] | list['JsonWithTuple'] | tuple['JsonWithTuple', ...]
 )
 JsonWithTupleT = TypeVar('JsonWithTupleT', bound=JsonWithTuple)
-
-
-class FinalJson(str): ...
-
 
 JsonScalarWithFinal: TypeAlias = JsonScalar | FinalJson
 JsonWithFinal: TypeAlias = JsonScalarWithFinal | dict[str, 'JsonWithFinal'] | list['JsonWithFinal']
