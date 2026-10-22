@@ -38,6 +38,7 @@ dev = [
     "prek>=0.2.0,<1",
     "basedpyright>=1.40.1",
     "mypy>=2.3.0,<3",
+    "types-simplejson>=4.1.2",
     "hypothesis>=6.168.0",
     "rfc8785>=0.1.4",
     "jcs>=0.2.1",
