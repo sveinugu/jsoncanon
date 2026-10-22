@@ -1,4 +1,5 @@
-from typing import Callable, Literal, NamedTuple, TypeAlias, TypedDict, TypeVar
+from collections.abc import Callable
+from typing import Literal, NamedTuple, TypeAlias, TypedDict, TypeVar
 
 from simplejson import RawJSON
 

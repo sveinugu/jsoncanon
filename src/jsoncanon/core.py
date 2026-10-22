@@ -1,4 +1,5 @@
-from typing import Callable, NoReturn, cast, overload
+from collections.abc import Callable
+from typing import NoReturn, cast, overload
 
 import simplejson
 

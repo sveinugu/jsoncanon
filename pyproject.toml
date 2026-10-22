@@ -62,7 +62,7 @@ force-exclude = true
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "C90", "I", "Q"]
+select = ["E", "F", "W", "C90", "I", "Q", "UP"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
