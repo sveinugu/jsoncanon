@@ -5,7 +5,7 @@ from simplejson import RawJSON
 
 class FinalJson(RawJSON):
     def __eq__(self, other: 'FinalJson | object') -> bool:
-        return type(other) == FinalJson and other.encoded_json == self.encoded_json
+        return type(other) is FinalJson and other.encoded_json == self.encoded_json
 
 
 BigIntsOption: TypeAlias = Literal['as_string', 'uniquely_as_string', 'as_float', 'raise']

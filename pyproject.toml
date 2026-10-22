@@ -63,7 +63,6 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C90", "I", "Q"]
-ignore = ["E721"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
