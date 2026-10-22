@@ -69,10 +69,9 @@ pass_filenames = false
 groups = ["commit"]
 
 [[repos.hooks]]
-id = "taplo"
-
-name = "taplo fmt"
-entry = "uv run taplo fmt"
+id = "tombi"
+name = "tombi format"
+entry = "uv run tombi format"
 language = "system"
 types = ["toml"]
 groups = ["watch", "commit"]

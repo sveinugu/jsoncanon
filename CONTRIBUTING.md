@@ -41,10 +41,10 @@ uv run ruff check
 ```
 
 TOML files (`pyproject.toml`, `prek.toml`) are formatted with
-[taplo](https://taplo.tamasfe.dev/), configured in `.taplo.toml`.
+[Tombi](https://tombi-toml.github.io/tombi/), configured in `tombi.toml`.
 
 ```
-uv run taplo fmt
+uv run tombi format
 ```
 
 ## Type checking
@@ -65,8 +65,9 @@ Run `uv sync --group dev` first so the `.venv` and development tools used below 
 
 1. Install the extensions: **Python** (`ms-python.python`), **Pylance**
    (`ms-python.vscode-pylance`), **Ruff** (`charliermarsh.ruff`),
-   **Mypy Type Checker** (`ms-python.mypy-type-checker`), and
-   **Even Better TOML** (`tamasfe.even-better-toml`).
+   **Mypy Type Checker** (`ms-python.mypy-type-checker`), and a **Tombi** TOML
+   extension (see the
+   [Tombi VS Code extension docs](https://tombi-toml.github.io/tombi/docs/editors/vscode-extension)).
 2. Select the interpreter: Command Palette → "Python: Select Interpreter" →
    choose `.venv/bin/python` (created by `uv sync`).
 3. Set Ruff as the default formatter for Python and enable format-on-save:
@@ -79,10 +80,11 @@ Run `uv sync --group dev` first so the `.venv` and development tools used below 
    `pyproject.toml` — no extra configuration needed.
 6. The Mypy extension picks up `[tool.mypy]` from `pyproject.toml`
    automatically once the interpreter is set.
-7. Even Better TOML formats `.toml` files using `.taplo.toml`
-   automatically. Enable format-on-save for TOML the same way as step 3.
+7. The Tombi extension formats `.toml` files using `tombi.toml`. Set it as the
+   default formatter for TOML and enable format-on-save for TOML the same way
+   as step 3.
 8. Optionally, run the rest of the prek `watch` group (the checks not
-   already covered by the Ruff extension or Even Better TOML above)
+   already covered by the Ruff extension or the Tombi extension above)
    automatically on save. VS Code has no built-in file watcher equivalent to
    PyCharm's, but the **Run on Save** extension (`emeraldwalk.runonsave`)
    provides the same behavior. Install it, then add to your `settings.json`
@@ -116,7 +118,7 @@ Run `uv sync --group dev` first so the `.venv` and development tools used below 
 4. For mypy, either install the **Mypy** plugin or rely on `uv run mypy src`
    / the `commit` prek group.
 5. Run the prek `watch` group (`ruff format`, `ruff check --fix`, trailing
-   whitespace/EOF fixers, and taplo) automatically on save via a File
+   whitespace/EOF fixers, and tombi) automatically on save via a File
    Watcher: Settings → Tools → File Watchers → **+** → **Custom**:
    - Name: `prek watch`
    - File type: `Any`
