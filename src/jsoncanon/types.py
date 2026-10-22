@@ -22,6 +22,9 @@ JsonWithTupleT = TypeVar('JsonWithTupleT', bound=JsonWithTuple)
 JsonScalarWithFinal: TypeAlias = JsonScalar | FinalJson
 JsonWithFinal: TypeAlias = JsonScalarWithFinal | dict[str, 'JsonWithFinal'] | list['JsonWithFinal']
 
+# Aliased outside the class below, where the 'str' field shadows the builtin in type expressions
+JsonDictWithFinal: TypeAlias = dict[str, JsonWithFinal]
+
 
 class PreprocFuncDict(TypedDict, total=False):
     str: Callable[[str], JsonWithFinal]
@@ -29,7 +32,7 @@ class PreprocFuncDict(TypedDict, total=False):
     int: Callable[[int], JsonWithFinal]
     float: Callable[[float], JsonWithFinal]
     NoneType: Callable[[None], JsonWithFinal]
-    dict: Callable[[dict[str, JsonWithFinal]], JsonWithFinal]
+    dict: Callable[[JsonDictWithFinal], JsonWithFinal]
     list: Callable[[list[JsonWithFinal]], JsonWithFinal]
 
 
