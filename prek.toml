@@ -29,20 +29,26 @@ id = "check-merge-conflict"
 groups = ["commit"]
 
 [[repos]]
-repo = "https://github.com/astral-sh/ruff-pre-commit"
-rev = "v0.13.3"
+repo = "local"
 
+# Ruff is run through uv to use the version from the dev dependencies in pyproject.toml, so that
+# the hooks, CI and manual runs always agree on formatting and rules (a separately pinned
+# ruff-pre-commit rev can drift out of step). File excludes are set in pyproject.toml.
 [[repos.hooks]]
 id = "ruff-check"
-args = ["--fix"]
+name = "ruff check"
+entry = "uv run ruff check --fix"
+language = "system"
+types = ["python"]
 groups = ["watch", "commit"]
 
 [[repos.hooks]]
 id = "ruff-format"
+name = "ruff format"
+entry = "uv run ruff format"
+language = "system"
+types_or = ["python", "markdown"]
 groups = ["watch", "commit"]
-
-[[repos]]
-repo = "local"
 
 [[repos.hooks]]
 id = "basedpyright"
