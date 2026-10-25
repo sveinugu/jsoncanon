@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The package version is derived from the release tags
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.1.0
       - run: uv sync
       - run: uv run prek run --all-files
@@ -22,6 +25,9 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The package version is derived from the release tags
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.1.0
       - run: uv sync --python ${{ matrix.python-version }}
       - run: uv run pytest
