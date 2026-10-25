@@ -49,8 +49,12 @@ dev = [
 requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
+# The version comes from the latest release tag, e.g. "v0.2.4" gives "0.2.4"
 [tool.hatch.version]
 source = "vcs"
+tag-pattern = "^v(?P<version>.+)$"
+# Only release tags count, so that other tags can be added later
+raw-options = { scm = { git = { describe_command = "git describe --dirty --tags --long --match 'v*'" } } }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jsoncanon"]
