@@ -34,7 +34,7 @@ jobs:
           # The commit that CI tested
           ref: ${{ github.sha }}
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v10.1.0
+      - uses: astral-sh/setup-uv@v10.3.2
       - name: Configure Git identity
         run: |
           git config user.name "$GITHUB_ACTOR"
