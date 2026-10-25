@@ -1,3 +1,4 @@
+from importlib.metadata import version
 from typing import cast
 
 import pytest
@@ -13,7 +14,7 @@ from jsoncanon.types import BigIntsOption
 
 
 def test_version() -> None:
-    assert __version__ == '0.2.3'
+    assert __version__ == version('jsoncanon')
 
 
 def test_canonicalize_whitespace() -> None:
