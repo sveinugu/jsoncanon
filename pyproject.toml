@@ -59,6 +59,10 @@ raw-options = { scm = { git = { describe_command = "git describe --dirty --tags 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jsoncanon"]
 
+[tool.uv]
+# Rebuild the editable install when the commit or the tags change, to update the version
+cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
+
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
