@@ -31,7 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: main
+          # The commit that CI tested
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.1.0
       - name: Configure Git identity
