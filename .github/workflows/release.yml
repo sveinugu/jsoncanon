@@ -36,3 +36,6 @@ jobs:
           test "$(find dist -maxdepth 1 -name '*.tar.gz' | wc -l | tr -d ' ')" = 1
           test "$(find dist -maxdepth 1 -name '*.whl' | wc -l | tr -d ' ')" = 1
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Lets a rerun finish a partial upload
+          skip-existing: true
